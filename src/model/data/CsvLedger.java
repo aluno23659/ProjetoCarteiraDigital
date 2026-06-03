@@ -7,9 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-/**
- * Classe responsável por guardar o histórico de transações num ficheiro CSV.
- */
+
 public class CsvLedger extends Ledger {
 
     // Caminho onde o ficheiro vai ser guardado
@@ -55,8 +53,8 @@ public class CsvLedger extends Ledger {
         try (FileWriter writer = new FileWriter(this.filePath, true)) {
 
             // Formatamos os dados num formato CSV simples: Origem;Destino;Valor;Data
-            String linhaCSV = t.getSource().getAdress() + ";" +
-                    t.getDestination().getAdress() + ";" +
+            String linhaCSV = t.getSource().getAddress() + ";" +
+                    t.getDestination().getAddress() + ";" +
                     t.getAmount() + ";" +
                     System.currentTimeMillis() + "\n";
 
@@ -102,6 +100,7 @@ public class CsvLedger extends Ledger {
                     this.data.add(t);
                 }
             }
+            System.out.println("BACKUP: Foram carregadas " + this.data.size() + " transações do ficheiro!");
         } catch (Exception e) {
             System.out.println("Erro ao carregar o backup: " + e.getMessage());
         }

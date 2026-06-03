@@ -21,7 +21,6 @@ public abstract class Currency {
     public String toString(){
         return name + "("+ symbol +")";
     }
-    //:::::::::::::::::::::::::::  Copyright(c) M@nso  2026  :::::::::::::::::::
-    ///////////////////////////////////////////////////////////////////////////
+
 }
 

@@ -50,7 +50,7 @@ public class CarteiraView extends JFrame {
     // Main temporário apenas para testares o visual da janela
     public static void main(String[] args) {
         // Inicialização oficial do FlatLaf (Muda para FlatDarkLaf.setup() se quiseres modo escuro)
-        com.formdev.flatlaf.FlatLightLaf.setup();
+        com.formdev.flatlaf.FlatDarkLaf.setup();
 
         // Criar e mostrar a janela
         SwingUtilities.invokeLater(() -> {

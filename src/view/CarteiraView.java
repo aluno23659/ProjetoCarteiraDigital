@@ -62,4 +62,12 @@ public class CarteiraView extends JFrame {
             janela.setVisible(true);
         });
     }
+    // Getters para o Controller conseguir aceder aos botões
+    public JButton getBtnNovaTransacao() {
+        return btnNovaTransacao;
+    }
+
+    public JButton getBtnVerHistorico() {
+        return btnVerHistorico;
+    }
 }

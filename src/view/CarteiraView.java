@@ -49,11 +49,12 @@ public class CarteiraView extends JFrame {
 
     // Main temporário apenas para testares o visual da janela
     public static void main(String[] args) {
-        // Truque temporário para usar o visual do teu Sistema Operativo (em vez do Swing pré-histórico)
+        // A MAGIA ACONTECE AQUI: Aplica o tema moderno antes de desenhar a janela
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // Podes usar FlatLightLaf() para modo claro, ou FlatDarkLaf() para modo escuro!
+            UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Falha ao inicializar o FlatLaf");
         }
 
         // Criar e mostrar a janela

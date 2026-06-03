@@ -105,4 +105,8 @@ public class CsvLedger extends Ledger {
             System.out.println("Erro ao carregar o backup: " + e.getMessage());
         }
     }
+    // Método para permitir que a interface saiba quantas transações existem
+    public java.util.ArrayList<model.transactions.Transaction> getElements() {
+        return this.data;
+    }
 }

@@ -25,12 +25,34 @@ public class CarteiraController {
     }
 
     private void inicializarEventos() {
+        // Quando o botão "Ver Histórico" for clicado
         view.getBtnVerHistorico().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(view, "O histórico tem " + ledger.getElements().size() + " transações gravadas!");
+                // 1. Cria a nova janela de Histórico
+                view.HistoricoView janelaHistorico = new view.HistoricoView(view);
+
+                // 2. Vai ao Motor de Dados (Ledger) buscar a lista toda
+                for (Transaction t : ledger.getElements()) {
+
+                    // --- ATENÇÃO AOS NOMES DOS MÉTODOS AQUI ---
+                    // Como não conheço a tua classe Transaction, se estes métodos ficarem a vermelho,
+                    // altera-os para os getters corretos (ex: t.getOrigem(), t.getSender(), etc.)
+                    // O ".toString()" garante que convertemos o objeto para texto legível.
+
+                    String origem = t.getSource().toString();
+                    String destino = t.getDestination().toString();
+                    String moeda = t.getCoin().toString();
+                    String valor = String.valueOf(t.getAmount());
+
+                    // 3. Envia os dados preparados para a View desenhar na tabela
+                    janelaHistorico.adicionarLinha(origem, destino, moeda, valor);
+                }
+
+                // 4. Mostra a janela preenchida
+                janelaHistorico.setVisible(true);
             }
-        });
+        });;
 
         // Quando o botão "Nova Transação" da janela principal for clicado
         view.getBtnNovaTransacao().addActionListener(new ActionListener() {
@@ -77,14 +99,28 @@ public class CarteiraController {
 
                             model.wallet.RegularWallet cartOrigem = new model.wallet.RegularWallet(origem);
                             model.wallet.RegularWallet cartDestino = new model.wallet.RegularWallet(destino);
-                            model.coin.BitCoin moedaBtc = new model.coin.BitCoin();
 
-                            Transaction t = new Transaction(cartOrigem, cartDestino, moedaBtc, valor);
+                            // 1. Descobrir qual foi a moeda que o utilizador escolheu no Dropdown
+                            String moedaEscolhida = janelaNova.getMoedaSelecionada();
+                            model.coin.Currency moedaObj;
+
+                            // 2. Criar a moeda certa consoante a escolha
+                            // ATENÇÃO: Verifica se tens estas classes (Ethereum, Euro) criadas no teu pacote model.coin!
+                            if (moedaEscolhida.contains("BTC")) {
+                                moedaObj = new model.coin.BitCoin();
+                            } else if (moedaEscolhida.contains("ETH")) {
+                                moedaObj = new model.coin.Ether();
+                            } else {
+                                moedaObj = new model.coin.Euro();
+                            }
+
+                            // 3. Criar a transação com a moeda dinâmica
+                            Transaction t = new Transaction(cartOrigem, cartDestino, moedaObj, valor);
 
                             ledger.add(t);
 
                             calcularEAtualizarSaldo();
-                            janelaNova.dispose(); // Fecha a janela secundária
+                            janelaNova.dispose();
 
                             JOptionPane.showMessageDialog(view, "Transação gravada com sucesso!");
 

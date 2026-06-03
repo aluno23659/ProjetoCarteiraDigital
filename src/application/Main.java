@@ -33,5 +33,21 @@ public class Main {
 
         System.out.println("Transação guardada com sucesso!");
         System.out.println("Verifica se o ficheiro 'historico_transacoes.csv' apareceu no teu projeto.");
+
+        // ... (o teu código anterior do CsvLedger)
+
+        System.out.println("\n--- INICIAR O TESTE DO MOTOR DE CÂMBIOS ---");
+
+        // 1. Instanciar as moedas
+        BitCoin moedaBtc = new BitCoin();
+        model.coin.Euro moedaEuro = new model.coin.Euro(); // O IntelliJ pode pedir Alt+Enter para importar
+
+        // 2. Testar a conversão direta para Euro (ex: vender 2.5 BTC)
+        double saldoEmEuros = model.exchange.ConversorMoeda.paraEuro(moedaBtc, 2.5);
+        System.out.println("Vender 2.5 " + moedaBtc.getSymbol() + " dá: " + saldoEmEuros + " EUR");
+
+        // 3. Testar a conversão entre moedas (ex: comprar BTC com 120.000 Euros)
+        double compraBtc = model.exchange.ConversorMoeda.converter(moedaEuro, moedaBtc, 120000.0);
+        System.out.println("Com 120000 EUR consegues comprar: " + compraBtc + " " + moedaBtc.getSymbol());
     }
 }

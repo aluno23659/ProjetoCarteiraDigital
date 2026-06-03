@@ -1,5 +1,6 @@
 package model.data;
 
+import model.transactions.Transaction;
 import model.wallet.Wallet;
 
 import java.util.ArrayList;

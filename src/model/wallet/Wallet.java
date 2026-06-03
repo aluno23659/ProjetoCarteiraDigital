@@ -18,10 +18,7 @@ package model.wallet;
 
 import java.util.Objects;
 
-/**
- * Created on 26/05/2026, 17:30:41
- * @author manso - computer
- */
+
 public abstract class Wallet {
 
     protected String adress;
@@ -70,6 +67,4 @@ public abstract class Wallet {
     private static final long serialVersionUID = 202605261730L;
 
 
-    //:::::::::::::::::::::::::::  Copyright(c) M@nso  2026  :::::::::::::::::::
-    ///////////////////////////////////////////////////////////////////////////
 }

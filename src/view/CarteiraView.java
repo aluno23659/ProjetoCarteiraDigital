@@ -1,69 +1,78 @@
 package view;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-// O "extends JFrame" significa que esta classe É uma janela do sistema operativo
 public class CarteiraView extends JFrame {
 
-    // 1. Declarar os componentes visuais (Encapsulamento: sempre private!)
-    private JLabel lblTitulo;
     private JLabel lblSaldoGeral;
     private JButton btnNovaTransacao;
     private JButton btnVerHistorico;
 
-    // 2. Construtor: Aqui é onde "desenhamos" a janela
+    // Novas peças para a tabela de carteiras
+    private JTable tabelaCarteiras;
+    private DefaultTableModel modeloTabela;
+
     public CarteiraView() {
-        // Configurações básicas da janela
-        setTitle("Carteira Digital");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Fechar o programa quando fechar a janela
-        setSize(400, 300); // Largura x Altura
-        setLocationRelativeTo(null); // Faz a janela aparecer perfeitamente centrada no ecrã
-        setLayout(new BorderLayout(10, 10)); // Um gestor de layout limpo, com margens
+        setTitle("Carteira Digital Pro");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(600, 500); // Aumentei a janela para caber a tabela
+        setLocationRelativeTo(null);
 
-        // Inicializar os componentes
-        lblTitulo = new JLabel("A Minha Carteira", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        // Painel Principal com margens
+        JPanel contentPane = new JPanel(new BorderLayout(15, 15));
+        contentPane.setBorder(new EmptyBorder(20, 20, 20, 20));
+        setContentPane(contentPane);
 
-        lblSaldoGeral = new JLabel("Saldo: -- EUR", SwingConstants.CENTER);
-        lblSaldoGeral.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        // 1. TOPO: Título e Saldo Geral
+        JPanel painelTopo = new JPanel(new GridLayout(2, 1));
+        JLabel lblTitulo = new JLabel("Resumo da Conta", SwingConstants.LEFT);
+        lblTitulo.setFont(new Font("Urbanist", Font.BOLD, 28));
 
-        btnNovaTransacao = new JButton("Nova Transação");
+        lblSaldoGeral = new JLabel("Total: 0.00 EUR");
+        lblSaldoGeral.setFont(new Font("Urbanist", Font.PLAIN, 20));
+        lblSaldoGeral.setForeground(new Color(222, 255, 154)); // Cor de destaque (Verde FlatLaf)
+
+        painelTopo.add(lblTitulo);
+        painelTopo.add(lblSaldoGeral);
+        contentPane.add(painelTopo, BorderLayout.NORTH);
+
+        // 2. CENTRO: Tabela de Carteiras
+        String[] colunas = {"ID da Carteira", "Saldo Atual", "Moeda"};
+        modeloTabela = new DefaultTableModel(colunas, 0);
+        tabelaCarteiras = new JTable(modeloTabela);
+        tabelaCarteiras.setRowHeight(25);
+
+        JScrollPane scroll = new JScrollPane(tabelaCarteiras);
+        scroll.setBorder(BorderFactory.createTitledBorder("As Minhas Carteiras"));
+        contentPane.add(scroll, BorderLayout.CENTER);
+
+        // 3. BAIXO: Botões
+        JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         btnVerHistorico = new JButton("Ver Histórico");
+        btnNovaTransacao = new JButton("Nova Transação");
 
-        // Painel para organizar os botões em baixo
-        JPanel painelBotoes = new JPanel();
-        painelBotoes.add(btnNovaTransacao);
+        // Estética: Botão de transação com destaque
+        btnNovaTransacao.putClientProperty("JButton.buttonType", "roundRect");
+
         painelBotoes.add(btnVerHistorico);
-
-        // Adicionar tudo à Janela Principal
-        add(lblTitulo, BorderLayout.NORTH);
-        add(lblSaldoGeral, BorderLayout.CENTER);
-        add(painelBotoes, BorderLayout.SOUTH);
+        painelBotoes.add(btnNovaTransacao);
+        contentPane.add(painelBotoes, BorderLayout.SOUTH);
     }
 
-    // 3. Métodos Públicos (Para o Controller poder atualizar a View no futuro)
-    public void atualizarSaldo(String texto) {
+    // Métodos para o Controller atualizar a View
+    public void limparTabela() { modeloTabela.setRowCount(0); }
+
+    public void adicionarCarteiraTabela(String nome, String saldo, String moeda) {
+        modeloTabela.addRow(new Object[]{nome, saldo, moeda});
+    }
+
+    public void atualizarSaldoGeral(String texto) {
         lblSaldoGeral.setText(texto);
     }
 
-    // Main temporário apenas para testares o visual da janela
-    public static void main(String[] args) {
-        // Inicialização oficial do FlatLaf (Muda para FlatDarkLaf.setup() se quiseres modo escuro)
-        com.formdev.flatlaf.FlatDarkLaf.setup();
-
-        // Criar e mostrar a janela
-        SwingUtilities.invokeLater(() -> {
-            CarteiraView janela = new CarteiraView();
-            janela.setVisible(true);
-        });
-    }
-    // Getters para o Controller conseguir aceder aos botões
-    public JButton getBtnNovaTransacao() {
-        return btnNovaTransacao;
-    }
-
-    public JButton getBtnVerHistorico() {
-        return btnVerHistorico;
-    }
+    public JButton getBtnNovaTransacao() { return btnNovaTransacao; }
+    public JButton getBtnVerHistorico() { return btnVerHistorico; }
 }

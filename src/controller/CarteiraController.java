@@ -142,27 +142,36 @@ public class CarteiraController {
 
     // O CÉREBRO EM AÇÃO: LER DO MODELO, CALCULAR E ENVIAR PARA A VIEW
     private void calcularEAtualizarSaldo() {
-        double saldoTotalEuros = 0.0;
+        // 1. Estruturas para organizar os dados
+        // Chave: Nome da Carteira | Valor: Saldo acumulado
+        java.util.Map<String, Double> saldosPorCarteira = new java.util.HashMap<>();
+        double saldoTotalGeralEuros = 0.0;
 
-        // Percorre todas as transações que o Ledger carregou do CSV
+        // 2. Percorrer o histórico e fazer as contas
         for (Transaction t : ledger.getElements()) {
-
-            // ATENÇÃO: Verifica se os métodos getAmount() e getCoin() são os corretos
-            // da tua classe Transaction feita pelo professor. Se ele usou outros nomes, altera aqui.
-            double quantidade = t.getAmount();
+            String origem = t.getSource().toString();
+            String destino = t.getDestination().toString();
+            double valor = t.getAmount();
             model.coin.Currency moeda = t.getCoin();
 
-            // Usa o teu conversor da Fase 2 para transformar o valor da transação em Euros
-            double valorEmEuros = ConversorMoeda.paraEuro(moeda, quantidade);
+            // Lógica: Quem envia (origem) perde saldo, quem recebe (destino) ganha
+            saldosPorCarteira.put(origem, saldosPorCarteira.getOrDefault(origem, 0.0) - valor);
+            saldosPorCarteira.put(destino, saldosPorCarteira.getOrDefault(destino, 0.0) + valor);
 
-            // Soma ao saldo total
-            saldoTotalEuros += valorEmEuros;
+            // Somar para o saldo geral em Euros (Usa o teu conversor da Fase 2!)
+            // Nota: Aqui calculamos o valor absoluto de cada transação no sistema
+            saldoTotalGeralEuros += ConversorMoeda.paraEuro(moeda, valor);
         }
 
-        // Formata o número para ter apenas 2 casas decimais (ex: 150000.00 EUR)
-        String saldoFormatado = String.format("%.2f", saldoTotalEuros);
+        // 3. Atualizar a Tabela na View
+        view.limparTabela();
+        for (String carteira : saldosPorCarteira.keySet()) {
+            double saldoFinal = saldosPorCarteira.get(carteira);
+            // Mostramos o saldo na moeda padrão (BTC para este exemplo, ou podes adaptar)
+            view.adicionarCarteiraTabela(carteira, String.format("%.4f", saldoFinal), "BTC/ETH");
+        }
 
-        // Dá a ordem à Janela (View) para mudar o texto
-        view.atualizarSaldo("Saldo Total: " + saldoFormatado + " EUR");
+        // 4. Atualizar o Saldo Geral
+        view.atualizarSaldoGeral("Total Consolidado: " + String.format("%.2f", saldoTotalGeralEuros) + " EUR");
     }
 }

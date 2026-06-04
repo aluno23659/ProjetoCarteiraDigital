@@ -26,33 +26,35 @@ public class CarteiraController {
 
     private void inicializarEventos() {
         // Quando o botão "Ver Histórico" for clicado
+        // Quando o botão "Ver Histórico" for clicado
+        // Quando o botão "Ver Histórico" for clicado
         view.getBtnVerHistorico().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 1. Cria a nova janela de Histórico
                 view.HistoricoView janelaHistorico = new view.HistoricoView(view);
 
-                // 2. Vai ao Motor de Dados (Ledger) buscar a lista toda
                 for (Transaction t : ledger.getElements()) {
 
-                    // --- ATENÇÃO AOS NOMES DOS MÉTODOS AQUI ---
-                    // Como não conheço a tua classe Transaction, se estes métodos ficarem a vermelho,
-                    // altera-os para os getters corretos (ex: t.getOrigem(), t.getSender(), etc.)
-                    // O ".toString()" garante que convertemos o objeto para texto legível.
+                    // 1. Limpeza do "(true)" e "(false)" injetados pelo modelo
+                    String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
+                    String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
 
-                    String origem = t.getSource().toString();
-                    String destino = t.getDestination().toString();
-                    String moeda = t.getCoin().toString();
+                    // (Opcional) Podemos também limpar o nome da moeda para ficar mais elegante na tabela!
+                    String moeda = t.getCoin().toString().replace("BitCoin(BTC)", "BTC").replace("Euro(EUR)", "EUR");
+
                     String valor = String.valueOf(t.getAmount());
 
-                    // 3. Envia os dados preparados para a View desenhar na tabela
-                    janelaHistorico.adicionarLinha(origem, destino, moeda, valor);
+                    // 2. Criptografia em Ação
+                    String dadosBrutos = origem + destino + moeda + valor;
+                    String hashSeguranca = calcularSHA256(dadosBrutos);
+
+                    // 3. Enviar para a grelha
+                    janelaHistorico.adicionarLinha(origem, destino, moeda, valor, hashSeguranca);
                 }
 
-                // 4. Mostra a janela preenchida
                 janelaHistorico.setVisible(true);
             }
-        });;
+        });
 
         // Quando o botão "Nova Transação" da janela principal for clicado
         view.getBtnNovaTransacao().addActionListener(new ActionListener() {
@@ -142,36 +144,62 @@ public class CarteiraController {
 
     // O CÉREBRO EM AÇÃO: LER DO MODELO, CALCULAR E ENVIAR PARA A VIEW
     private void calcularEAtualizarSaldo() {
-        // 1. Estruturas para organizar os dados
-        // Chave: Nome da Carteira | Valor: Saldo acumulado
+        // Agora a chave vai ser composta: "NomeDaCarteira||Moeda" para não misturar dinheiros diferentes!
         java.util.Map<String, Double> saldosPorCarteira = new java.util.HashMap<>();
         double saldoTotalGeralEuros = 0.0;
 
-        // 2. Percorrer o histórico e fazer as contas
         for (Transaction t : ledger.getElements()) {
-            String origem = t.getSource().toString();
-            String destino = t.getDestination().toString();
+            // 1. Limpar o "(true)" ou "(false)" que o Java injeta através do toString() do Modelo
+            String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
+            String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
+
             double valor = t.getAmount();
-            model.coin.Currency moeda = t.getCoin();
+            String nomeMoeda = t.getCoin().toString(); // Vai buscar o nome real da moeda da transação
 
-            // Lógica: Quem envia (origem) perde saldo, quem recebe (destino) ganha
-            saldosPorCarteira.put(origem, saldosPorCarteira.getOrDefault(origem, 0.0) - valor);
-            saldosPorCarteira.put(destino, saldosPorCarteira.getOrDefault(destino, 0.0) + valor);
+            // 2. Criar chaves únicas para cada tipo de moeda na mesma carteira
+            String chaveOrigem = origem + "||" + nomeMoeda;
+            String chaveDestino = destino + "||" + nomeMoeda;
 
-            // Somar para o saldo geral em Euros (Usa o teu conversor da Fase 2!)
-            // Nota: Aqui calculamos o valor absoluto de cada transação no sistema
-            saldoTotalGeralEuros += ConversorMoeda.paraEuro(moeda, valor);
+            // 3. Atualizar saldos subtraindo à origem e somando ao destino
+            saldosPorCarteira.put(chaveOrigem, saldosPorCarteira.getOrDefault(chaveOrigem, 0.0) - valor);
+            saldosPorCarteira.put(chaveDestino, saldosPorCarteira.getOrDefault(chaveDestino, 0.0) + valor);
+
+            // 4. O saldo geral continua a ser consolidado em Euros usando o teu Conversor
+            saldoTotalGeralEuros += ConversorMoeda.paraEuro(t.getCoin(), valor);
         }
 
-        // 3. Atualizar a Tabela na View
         view.limparTabela();
-        for (String carteira : saldosPorCarteira.keySet()) {
-            double saldoFinal = saldosPorCarteira.get(carteira);
-            // Mostramos o saldo na moeda padrão (BTC para este exemplo, ou podes adaptar)
-            view.adicionarCarteiraTabela(carteira, String.format("%.4f", saldoFinal), "BTC/ETH");
+
+        for (String chave : saldosPorCarteira.keySet()) {
+            double saldoFinal = saldosPorCarteira.get(chave);
+
+            // Separar a nossa chave composta para voltar a ter o Nome e a Moeda
+            String[] partes = chave.split("\\|\\|");
+            String nomeCarteira = partes[0];
+            String moeda = partes[1];
+
+            // Injeta na View com a Moeda correta!
+            view.adicionarCarteiraTabela(nomeCarteira, String.format("%.4f", saldoFinal), moeda);
         }
 
-        // 4. Atualizar o Saldo Geral
         view.atualizarSaldoGeral("Total Consolidado: " + String.format("%.2f", saldoTotalGeralEuros) + " EUR");
+    }
+    // O MOTOR CRIPTOGRÁFICO: Gera um Hash SHA-256 único para a transação
+    public static String calcularSHA256(String texto) {
+        try {
+            java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(texto.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            // Retorna o código hexadecimal completo
+            return hexString.toString();
+        } catch (Exception ex) {
+            return "Erro ao gerar Hash";
+        }
     }
 }

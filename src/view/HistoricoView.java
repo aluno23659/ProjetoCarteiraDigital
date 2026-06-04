@@ -11,33 +11,33 @@ public class HistoricoView extends JDialog {
     private DefaultTableModel modeloTabela;
 
     public HistoricoView(JFrame parent) {
-        super(parent, "Histórico de Transações", true);
-        setSize(550, 300);
+        super(parent, "Histórico de Transações Protegido (Blockchain)", true);
+        setSize(750, 350); // Aumentei a largura da janela para caber o Hash longo
         setLocationRelativeTo(parent);
 
-        // 1. Painel principal com margens limpas
         JPanel painelPrincipal = new JPanel(new BorderLayout());
         painelPrincipal.setBorder(new EmptyBorder(15, 15, 15, 15));
 
-        // 2. Definir as colunas da nossa tabela
-        String[] colunas = {"Origem", "Destino", "Moeda", "Valor"};
+        // ADICIONADA A COLUNA "Hash SHA-256"
+        String[] colunas = {"Origem", "Destino", "Moeda", "Valor", "Hash SHA-256"};
 
-        // O DefaultTableModel é o "esqueleto" que guarda os dados da tabela
         modeloTabela = new DefaultTableModel(colunas, 0);
         tabela = new JTable(modeloTabela);
-
-        // Impedir que o utilizador edite as células diretamente na tabela
         tabela.setDefaultEditor(Object.class, null);
 
-        // 3. A Magia do Swing: Embrulhar a tabela num Scroll para ter cabeçalhos e barra de rolagem
+        // Ajustar a largura da coluna do Hash para ficar legível
+        tabela.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+
         JScrollPane scrollPane = new JScrollPane(tabela);
         painelPrincipal.add(scrollPane, BorderLayout.CENTER);
 
         add(painelPrincipal);
     }
 
-    // Método público para o Controller poder injetar as transações uma a uma
-    public void adicionarLinha(String origem, String destino, String moeda, String valor) {
-        modeloTabela.addRow(new Object[]{origem, destino, moeda, valor});
+    // Método atualizado para receber o Hash
+    public void adicionarLinha(String origem, String destino, String moeda, String valor, String hash) {
+        // Mostra apenas os primeiros 15 caracteres do Hash para não sobrecarregar o ecrã, seguido de "..."
+        String hashCurto = hash.substring(0, Math.min(hash.length(), 15)) + "...";
+        modeloTabela.addRow(new Object[]{origem, destino, moeda, valor, hashCurto});
     }
 }

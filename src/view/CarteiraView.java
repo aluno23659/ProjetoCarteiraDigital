@@ -44,6 +44,7 @@ public class CarteiraView extends JFrame {
         modeloTabela = new DefaultTableModel(colunas, 0);
         tabelaCarteiras = new JTable(modeloTabela);
         tabelaCarteiras.setRowHeight(25);
+        tabelaCarteiras.setDefaultEditor(Object.class, null);
 
         JScrollPane scroll = new JScrollPane(tabelaCarteiras);
         scroll.setBorder(BorderFactory.createTitledBorder("As Minhas Carteiras"));

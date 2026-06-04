@@ -13,21 +13,54 @@ public class CarteiraController {
 
     private CarteiraView view;
     private CsvLedger ledger;
+    private java.util.List<String> carteirasRegistadas; // Nova lista!
 
     public CarteiraController(CarteiraView view, CsvLedger ledger) {
         this.view = view;
         this.ledger = ledger;
+        this.carteirasRegistadas = new java.util.ArrayList<>();
+
+        // Vai buscar as carteiras que já existem no histórico
+        carregarCarteirasDoHistorico();
 
         inicializarEventos();
-
-        // Assim que o Controller arranca, ele faz as contas e atualiza o ecrã na hora!
         calcularEAtualizarSaldo();
+    }
+    private void carregarCarteirasDoHistorico() {
+        for (model.transactions.Transaction t : ledger.getElements()) {
+            String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
+            String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
+
+            if (!carteirasRegistadas.contains(origem)) carteirasRegistadas.add(origem);
+            if (!carteirasRegistadas.contains(destino)) carteirasRegistadas.add(destino);
+        }
     }
 
     private void inicializarEventos() {
         // Quando o botão "Ver Histórico" for clicado
         // Quando o botão "Ver Histórico" for clicado
-        // Quando o botão "Ver Histórico" for clicado
+        // NOVO: Lógica do Botão Criar Carteira
+        view.getBtnNovaCarteira().addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Abre uma caixinha simples a pedir o nome
+                String nomeNovaCarteira = JOptionPane.showInputDialog(view, "Qual o nome da nova carteira?");
+
+                // Valida se o utilizador escreveu algo e se não cancelou
+                if (nomeNovaCarteira != null && !nomeNovaCarteira.trim().isEmpty()) {
+                    String nomeLimpo = nomeNovaCarteira.trim();
+
+                    if (carteirasRegistadas.contains(nomeLimpo)) {
+                        JOptionPane.showMessageDialog(view, "Esta carteira já existe!", "Erro", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        carteirasRegistadas.add(nomeLimpo);
+                        // Atualiza a tabela com a nova carteira a zeros
+                        view.adicionarCarteiraTabela(nomeLimpo, "0.0000", "-");
+                        JOptionPane.showMessageDialog(view, "Carteira '" + nomeLimpo + "' criada com sucesso!");
+                    }
+                }
+            }
+        });
         view.getBtnVerHistorico().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -61,27 +94,26 @@ public class CarteiraController {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // 1. Abre a nova janela de formulário
-                view.NovaTransacaoView janelaNova = new view.NovaTransacaoView(view);
+                // Passamos a lista de carteiras para a janela desenhar os menus pendentes
+                view.NovaTransacaoView janelaNova = new view.NovaTransacaoView(view, carteirasRegistadas);
 
-                // 2. Fica à escuta do botão "Gravar"
                 janelaNova.getBtnGravar().addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ev) {
 
-                        // a) Ler os textos e limpar espaços em branco acidentais com o .trim()
-                        String origem = janelaNova.getOrigem().trim();
-                        String destino = janelaNova.getDestino().trim();
+                        // Lemos a partir dos menus pendentes!
+                        String origem = janelaNova.getOrigemSelecionada();
+                        String destino = janelaNova.getDestinoSelecionado();
                         String valorTexto = janelaNova.getValor().trim();
 
-                        // --- FASE DE VALIDAÇÃO ---
-
-                        // VALIDAÇÃO 1: Campos Vazios?
-                        if (origem.isEmpty() || destino.isEmpty() || valorTexto.isEmpty()) {
-                            JOptionPane.showMessageDialog(janelaNova,
-                                    "Atenção: Todos os campos são de preenchimento obrigatório!",
-                                    "Dados Incompletos",
-                                    JOptionPane.WARNING_MESSAGE);
-                            return; // Corta a execução aqui. O código abaixo já não corre.
+                        // Validação Extra: Não deixar enviar para a própria carteira
+                        if (origem == null || destino == null) {
+                            JOptionPane.showMessageDialog(janelaNova, "Cria pelo menos duas carteiras primeiro!");
+                            return;
+                        }
+                        if (origem.equals(destino)) {
+                            JOptionPane.showMessageDialog(janelaNova, "A carteira de origem e destino não podem ser a mesma!");
+                            return;
                         }
 
                         try {

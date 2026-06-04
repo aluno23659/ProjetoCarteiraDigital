@@ -3,35 +3,38 @@ package view;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.List;
 
 public class NovaTransacaoView extends JDialog {
 
-    private JTextField txtOrigem;
-    private JTextField txtDestino;
-    private JComboBox<String> cbMoeda; // Novo componente!
+    private JComboBox<String> cbOrigem;  // Agora é um menu pendente!
+    private JComboBox<String> cbDestino; // Agora é um menu pendente!
+    private JComboBox<String> cbMoeda;
     private JTextField txtValor;
     private JButton btnGravar;
 
-    public NovaTransacaoView(JFrame parent) {
+    // O construtor agora recebe a lista de carteiras que existem no sistema
+    public NovaTransacaoView(JFrame parent, List<String> carteirasExistentes) {
         super(parent, "Nova Transação", true);
-        setSize(380, 280); // Aumentei um pouco a altura para caber a nova linha
+        setSize(380, 280);
         setLocationRelativeTo(parent);
 
         JPanel painelPrincipal = new JPanel(new BorderLayout(10, 10));
         painelPrincipal.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // A grelha agora tem 4 linhas em vez de 3
         JPanel painelForm = new JPanel(new GridLayout(4, 2, 10, 15));
 
+        // Transformar a lista do Java num formato que a ComboBox entenda
+        String[] arrayCarteiras = carteirasExistentes.toArray(new String[0]);
+
         painelForm.add(new JLabel("Carteira Origem:"));
-        txtOrigem = new JTextField();
-        painelForm.add(txtOrigem);
+        cbOrigem = new JComboBox<>(arrayCarteiras);
+        painelForm.add(cbOrigem);
 
         painelForm.add(new JLabel("Carteira Destino:"));
-        txtDestino = new JTextField();
-        painelForm.add(txtDestino);
+        cbDestino = new JComboBox<>(arrayCarteiras);
+        painelForm.add(cbDestino);
 
-        // NOVA LINHA: A caixa de seleção das moedas
         painelForm.add(new JLabel("Moeda:"));
         String[] opcoesMoedas = {"Bitcoin (BTC)", "Ethereum (ETH)", "Euro (EUR)"};
         cbMoeda = new JComboBox<>(opcoesMoedas);
@@ -50,12 +53,10 @@ public class NovaTransacaoView extends JDialog {
         add(painelPrincipal);
     }
 
-    public String getOrigem() { return txtOrigem.getText(); }
-    public String getDestino() { return txtDestino.getText(); }
-    public String getValor() { return txtValor.getText(); }
-
-    // Novo getter para saber qual foi a moeda escolhida na caixa
+    // Os novos Getters para os menus pendentes
+    public String getOrigemSelecionada() { return (String) cbOrigem.getSelectedItem(); }
+    public String getDestinoSelecionado() { return (String) cbDestino.getSelectedItem(); }
     public String getMoedaSelecionada() { return (String) cbMoeda.getSelectedItem(); }
-
+    public String getValor() { return txtValor.getText(); }
     public JButton getBtnGravar() { return btnGravar; }
 }

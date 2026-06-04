@@ -10,6 +10,7 @@ public class CarteiraView extends JFrame {
     private JLabel lblSaldoGeral;
     private JButton btnNovaTransacao;
     private JButton btnVerHistorico;
+    private JButton btnNovaCarteira;
 
     // Novas peças para a tabela de carteiras
     private JTable tabelaCarteiras;
@@ -51,14 +52,17 @@ public class CarteiraView extends JFrame {
         contentPane.add(scroll, BorderLayout.CENTER);
 
         // 3. BAIXO: Botões
+        // 3. BAIXO: Botões
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+
         btnVerHistorico = new JButton("Ver Histórico");
+        btnNovaCarteira = new JButton("+ Nova Carteira"); // O nosso botão novo!
         btnNovaTransacao = new JButton("Nova Transação");
 
-        // Estética: Botão de transação com destaque
         btnNovaTransacao.putClientProperty("JButton.buttonType", "roundRect");
 
         painelBotoes.add(btnVerHistorico);
+        painelBotoes.add(btnNovaCarteira);
         painelBotoes.add(btnNovaTransacao);
         contentPane.add(painelBotoes, BorderLayout.SOUTH);
     }
@@ -76,4 +80,5 @@ public class CarteiraView extends JFrame {
 
     public JButton getBtnNovaTransacao() { return btnNovaTransacao; }
     public JButton getBtnVerHistorico() { return btnVerHistorico; }
+    public JButton getBtnNovaCarteira() { return btnNovaCarteira; }
 }

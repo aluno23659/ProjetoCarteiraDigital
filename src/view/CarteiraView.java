@@ -4,81 +4,93 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.List;
 
 public class CarteiraView extends JFrame {
 
     private JLabel lblSaldoGeral;
+    private JComboBox<String> cbCarteiraAtiva;
     private JButton btnNovaTransacao;
     private JButton btnVerHistorico;
     private JButton btnNovaCarteira;
+    private JButton btnExchange;
+    private JButton btnDeposito;
 
-    // Novas peças para a tabela de carteiras
     private JTable tabelaCarteiras;
     private DefaultTableModel modeloTabela;
 
     public CarteiraView() {
-        setTitle("Carteira Digital Pro");
+        setTitle("Crypto Wallet Pro v2.0");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500); // Aumentei a janela para caber a tabela
+        setSize(700, 550);
         setLocationRelativeTo(null);
 
-        // Painel Principal com margens
         JPanel contentPane = new JPanel(new BorderLayout(15, 15));
         contentPane.setBorder(new EmptyBorder(20, 20, 20, 20));
         setContentPane(contentPane);
 
-        // 1. TOPO: Título e Saldo Geral
-        JPanel painelTopo = new JPanel(new GridLayout(2, 1));
-        JLabel lblTitulo = new JLabel("Resumo da Conta", SwingConstants.LEFT);
-        lblTitulo.setFont(new Font("Urbanist", Font.BOLD, 28));
+        // 1. TOPO: Seleção de Carteira Ativa
+        JPanel painelTopo = new JPanel(new BorderLayout(10, 10));
 
-        lblSaldoGeral = new JLabel("Total: 0.00 EUR");
-        lblSaldoGeral.setFont(new Font("Urbanist", Font.PLAIN, 20));
-        lblSaldoGeral.setForeground(new Color(222, 255, 154)); // Cor de destaque (Verde FlatLaf)
+        JPanel painelFoco = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        painelFoco.add(new JLabel("Gerir Conta:"));
+        cbCarteiraAtiva = new JComboBox<>();
+        cbCarteiraAtiva.setPreferredSize(new Dimension(200, 30));
+        painelFoco.add(cbCarteiraAtiva);
 
-        painelTopo.add(lblTitulo);
-        painelTopo.add(lblSaldoGeral);
+        lblSaldoGeral = new JLabel("0.00 EUR", SwingConstants.RIGHT);
+        lblSaldoGeral.setFont(new Font("Arial", Font.BOLD, 22));
+        lblSaldoGeral.setForeground(new Color(222, 255, 154));
+
+        painelTopo.add(painelFoco, BorderLayout.WEST);
+        painelTopo.add(lblSaldoGeral, BorderLayout.EAST);
         contentPane.add(painelTopo, BorderLayout.NORTH);
 
-        // 2. CENTRO: Tabela de Carteiras
-        String[] colunas = {"ID da Carteira", "Saldo Atual", "Moeda"};
+        // 2. CENTRO: Ativos da Carteira Selecionada
+        String[] colunas = {"Ativo (Moeda)", "Quantidade", "Valor Estimado (EUR)"};
         modeloTabela = new DefaultTableModel(colunas, 0);
         tabelaCarteiras = new JTable(modeloTabela);
-        tabelaCarteiras.setRowHeight(25);
         tabelaCarteiras.setDefaultEditor(Object.class, null);
 
         JScrollPane scroll = new JScrollPane(tabelaCarteiras);
-        scroll.setBorder(BorderFactory.createTitledBorder("As Minhas Carteiras"));
+        scroll.setBorder(BorderFactory.createTitledBorder("Os Meus Ativos"));
         contentPane.add(scroll, BorderLayout.CENTER);
 
-        // 3. BAIXO: Botões
-        // 3. BAIXO: Botões
+        // 3. BAIXO: Botões de Operação
         JPanel painelBotoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-
-        btnVerHistorico = new JButton("Ver Histórico");
-        btnNovaCarteira = new JButton("+ Nova Carteira"); // O nosso botão novo!
-        btnNovaTransacao = new JButton("Nova Transação");
-
-        btnNovaTransacao.putClientProperty("JButton.buttonType", "roundRect");
+        btnVerHistorico = new JButton("Histórico");
+        btnNovaCarteira = new JButton("Criar Conta");
+        btnExchange = new JButton("Swap (Trocar)");
+        btnNovaTransacao = new JButton("Transferir");
+        btnDeposito = new JButton("Depositar");
 
         painelBotoes.add(btnVerHistorico);
         painelBotoes.add(btnNovaCarteira);
+        painelBotoes.add(btnExchange);
         painelBotoes.add(btnNovaTransacao);
+        painelBotoes.add(btnDeposito);
         contentPane.add(painelBotoes, BorderLayout.SOUTH);
     }
 
-    // Métodos para o Controller atualizar a View
+    // Métodos para o Controller usar
+    public void atualizarListaCarteiras(List<String> nomes) {
+        cbCarteiraAtiva.removeAllItems();
+        for (String n : nomes) cbCarteiraAtiva.addItem(n);
+    }
+
+    public String getCarteiraAtiva() { return (String) cbCarteiraAtiva.getSelectedItem(); }
     public void limparTabela() { modeloTabela.setRowCount(0); }
-
-    public void adicionarCarteiraTabela(String nome, String saldo, String moeda) {
-        modeloTabela.addRow(new Object[]{nome, saldo, moeda});
+    public void adicionarAtivo(String moeda, String qtd, String valorEur) {
+        modeloTabela.addRow(new Object[]{moeda, qtd, valorEur});
     }
+    public void atualizarSaldoTotal(String texto) { lblSaldoGeral.setText(texto); }
 
-    public void atualizarSaldoGeral(String texto) {
-        lblSaldoGeral.setText(texto);
-    }
-
+    // Getters dos botões
+    public JComboBox<String> getCbCarteiraAtiva() { return cbCarteiraAtiva; }
     public JButton getBtnNovaTransacao() { return btnNovaTransacao; }
     public JButton getBtnVerHistorico() { return btnVerHistorico; }
     public JButton getBtnNovaCarteira() { return btnNovaCarteira; }
+    public JButton getBtnExchange() { return btnExchange; }
+    public JButton getBtnDeposito() { return btnDeposito; }
+
 }

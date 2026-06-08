@@ -5,23 +5,30 @@ import view.CarteiraView;
 import model.transactions.Transaction;
 import model.exchange.ConversorMoeda;
 
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class CarteiraController {
 
-    private CarteiraView view;
-    private CsvLedger ledger;
-    private java.util.List<String> carteirasRegistadas; // Nova lista!
+    private final CarteiraView view;
+    private final CsvLedger ledger;
+    private final java.util.List<String> carteirasRegistadas; // Nova lista!
 
-    public CarteiraController(CarteiraView view, CsvLedger ledger) {
+    public CarteiraController(CarteiraView view, model.data.CsvLedger ledger) {
         this.view = view;
         this.ledger = ledger;
         this.carteirasRegistadas = new java.util.ArrayList<>();
 
-        // Vai buscar as carteiras que já existem no histórico
         carregarCarteirasDoHistorico();
+
+        // ADICIONAR ESTA LINHA: Injeta os nomes das carteiras no menu pendente
+        view.atualizarListaCarteiras(this.carteirasRegistadas);
 
         inicializarEventos();
         calcularEAtualizarSaldo();
@@ -38,11 +45,118 @@ public class CarteiraController {
 
     private void inicializarEventos() {
         // Quando o botão "Ver Histórico" for clicado
-        // Quando o botão "Ver Histórico" for clicado
-        // NOVO: Lógica do Botão Criar Carteira
-        view.getBtnNovaCarteira().addActionListener(new ActionListener() {
+        // 1. Quando o utilizador muda a carteira no menu pendente, a tabela atualiza!
+        view.getCbCarteiraAtiva().addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                calcularEAtualizarSaldo();
+            }
+        });
+        // Lógica do Botão DEPOSITAR
+        view.getBtnDeposito().addActionListener(new java.awt.event.ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String ativa = view.getCarteiraAtiva();
+                if (ativa == null) {
+                    JOptionPane.showMessageDialog(view, "Seleciona uma carteira primeiro!");
+                    return;
+                }
+
+                // O Truque: Criar um mini-formulário rápido dentro de um JOptionPane
+                JPanel painelDeposito = new JPanel(new GridLayout(2, 2, 5, 5));
+                painelDeposito.add(new JLabel("Moeda:"));
+                JComboBox<String> cbMoeda = new JComboBox<>(new String[]{"Euro (EUR)", "Bitcoin (BTC)", "Ethereum (ETH)"});
+                painelDeposito.add(cbMoeda);
+
+                painelDeposito.add(new JLabel("Valor a depositar:"));
+                JTextField txtValor = new JTextField();
+                painelDeposito.add(txtValor);
+
+                // Mostra a janela de depósito
+                int resultado = JOptionPane.showConfirmDialog(view, painelDeposito,
+                        "Depósito Externo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+                if (resultado == JOptionPane.OK_OPTION) {
+                    try {
+                        // Lê o valor (e aceita vírgulas ou pontos)
+                        double valor = Double.parseDouble(txtValor.getText().replace(",", "."));
+                        if (valor <= 0) throw new NumberFormatException(); // Não permite depósitos de 0 ou negativos
+
+                        // Cria os objetos para a transação
+                        String moedaEscolhida = (String) cbMoeda.getSelectedItem();
+                        model.coin.Currency moedaObj = model.coin.CoinFactory.criarMoeda(moedaEscolhida);
+
+                        // A origem é o "Sistema", o destino é a conta atual
+                        model.wallet.Wallet origem = new model.wallet.RegularWallet("Entidade_Bancaria");
+                        model.wallet.Wallet destino = new model.wallet.RegularWallet(ativa);
+
+                        // Regista o depósito no Ledger
+                        ledger.add(new model.transactions.Transaction(origem, destino, moedaObj, valor));
+
+                        // Atualiza a interface
+                        calcularEAtualizarSaldo();
+                        JOptionPane.showMessageDialog(view, "Depósito de " + valor + " registado com sucesso!");
+
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(view, "Valor inválido. Insere apenas números maiores que zero.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+
+
+        // 2. O botão "Swap (Trocar)"
+        view.getBtnExchange().addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                String ativa = view.getCarteiraAtiva();
+                if (ativa == null) {
+                    JOptionPane.showMessageDialog(view, "Cria ou seleciona uma carteira primeiro!");
+                    return;
+                }
+
+                view.ExchangeView janelaSwap = new view.ExchangeView(view);
+                janelaSwap.getBtnConfirmar().addActionListener(new java.awt.event.ActionListener() {
+                    public void actionPerformed(java.awt.event.ActionEvent ev) {
+                        try {
+                            double qtdVenda = Double.parseDouble(janelaSwap.getQuantidade().replace(",", "."));
+                            model.coin.Currency moedaDe = model.coin.CoinFactory.criarMoeda(janelaSwap.getMoedaOrigem());
+                            model.coin.Currency moedaPara = model.coin.CoinFactory.criarMoeda(janelaSwap.getMoedaDestino());
+
+                            model.wallet.Wallet w = new model.wallet.RegularWallet(ativa);
+
+                            // Regista a SAÍDA (venda)
+                            ledger.add(new model.transactions.Transaction(w, w, moedaDe, -qtdVenda));
+
+                            // Taxas de Câmbio Fixas (apenas para simulação do projeto)
+                            double taxa = 1.0;
+                            String nomeDe = moedaDe.toString();
+                            String nomePara = moedaPara.toString();
+
+                            if (nomeDe.contains("BTC") && nomePara.contains("ETH")) taxa = 27.74;
+                            else if (nomeDe.contains("ETH") && nomePara.contains("BTC")) taxa = 0.036;
+                            else if (nomeDe.contains("BTC") && nomePara.contains("EUR")) taxa = 61000.0;
+                            else if (nomeDe.contains("EUR") && nomePara.contains("BTC")) taxa = 0.000016;
+
+                            double qtdCompra = qtdVenda * taxa;
+
+                            // Regista a ENTRADA (compra)
+                            ledger.add(new model.transactions.Transaction(w, w, moedaPara, qtdCompra));
+
+                            calcularEAtualizarSaldo();
+                            janelaSwap.dispose();
+                            JOptionPane.showMessageDialog(view, "Swap realizado com sucesso!");
+
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(janelaSwap, "Verifica o valor inserido.");
+                        }
+                    }
+                });
+                janelaSwap.setVisible(true);
+            }
+        });
+        // Lógica do Botão Criar Carteira (ATUALIZADA PARA A V2.0)
+        view.getBtnNovaCarteira().addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
                 // Abre uma caixinha simples a pedir o nome
                 String nomeNovaCarteira = JOptionPane.showInputDialog(view, "Qual o nome da nova carteira?");
 
@@ -53,9 +167,15 @@ public class CarteiraController {
                     if (carteirasRegistadas.contains(nomeLimpo)) {
                         JOptionPane.showMessageDialog(view, "Esta carteira já existe!", "Erro", JOptionPane.ERROR_MESSAGE);
                     } else {
+                        // 1. Adiciona a nova carteira à memória do Controller
                         carteirasRegistadas.add(nomeLimpo);
-                        // Atualiza a tabela com a nova carteira a zeros
-                        view.adicionarCarteiraTabela(nomeLimpo, "0.0000", "-");
+
+                        // 2. Atualiza o menu pendente (Dropdown) lá no topo da janela!
+                        view.atualizarListaCarteiras(carteirasRegistadas);
+
+                        // 3. (Toque de classe UX) Seleciona automaticamente a carteira que acabaste de criar
+                        view.getCbCarteiraAtiva().setSelectedItem(nomeLimpo);
+
                         JOptionPane.showMessageDialog(view, "Carteira '" + nomeLimpo + "' criada com sucesso!");
                     }
                 }
@@ -176,45 +296,39 @@ public class CarteiraController {
 
     // O CÉREBRO EM AÇÃO: LER DO MODELO, CALCULAR E ENVIAR PARA A VIEW
     private void calcularEAtualizarSaldo() {
-        // Agora a chave vai ser composta: "NomeDaCarteira||Moeda" para não misturar dinheiros diferentes!
-        java.util.Map<String, Double> saldosPorCarteira = new java.util.HashMap<>();
-        double saldoTotalGeralEuros = 0.0;
+        String ativa = view.getCarteiraAtiva();
+        if (ativa == null) return; // Se não houver carteira selecionada, não faz nada
 
-        for (Transaction t : ledger.getElements()) {
-            // 1. Limpar o "(true)" ou "(false)" que o Java injeta através do toString() do Modelo
+        java.util.Map<String, Double> ativosDaConta = new java.util.HashMap<>();
+        double totalEur = 0.0;
+
+        for (model.transactions.Transaction t : ledger.getElements()) {
             String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
             String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
-
+            String moeda = t.getCoin().toString();
             double valor = t.getAmount();
-            String nomeMoeda = t.getCoin().toString(); // Vai buscar o nome real da moeda da transação
 
-            // 2. Criar chaves únicas para cada tipo de moeda na mesma carteira
-            String chaveOrigem = origem + "||" + nomeMoeda;
-            String chaveDestino = destino + "||" + nomeMoeda;
-
-            // 3. Atualizar saldos subtraindo à origem e somando ao destino
-            saldosPorCarteira.put(chaveOrigem, saldosPorCarteira.getOrDefault(chaveOrigem, 0.0) - valor);
-            saldosPorCarteira.put(chaveDestino, saldosPorCarteira.getOrDefault(chaveDestino, 0.0) + valor);
-
-            // 4. O saldo geral continua a ser consolidado em Euros usando o teu Conversor
-            saldoTotalGeralEuros += ConversorMoeda.paraEuro(t.getCoin(), valor);
+            if (origem.equals(ativa)) {
+                ativosDaConta.put(moeda, ativosDaConta.getOrDefault(moeda, 0.0) - valor);
+            }
+            if (destino.equals(ativa)) {
+                ativosDaConta.put(moeda, ativosDaConta.getOrDefault(moeda, 0.0) + valor);
+            }
         }
 
         view.limparTabela();
+        for (String moeda : ativosDaConta.keySet()) {
+            double qtd = ativosDaConta.get(moeda);
 
-        for (String chave : saldosPorCarteira.keySet()) {
-            double saldoFinal = saldosPorCarteira.get(chave);
+            // Assume-se que tens um ConversorMoeda. Se der erro, avisa!
+            model.coin.Currency c = model.coin.CoinFactory.criarMoeda(moeda);
+            double valorEur = model.exchange.ConversorMoeda.paraEuro(c, qtd);
+            totalEur += valorEur;
 
-            // Separar a nossa chave composta para voltar a ter o Nome e a Moeda
-            String[] partes = chave.split("\\|\\|");
-            String nomeCarteira = partes[0];
-            String moeda = partes[1];
-
-            // Injeta na View com a Moeda correta!
-            view.adicionarCarteiraTabela(nomeCarteira, String.format("%.4f", saldoFinal), moeda);
+            view.adicionarAtivo(moeda, String.format("%.4f", qtd), String.format("%.2f €", valorEur));
         }
 
-        view.atualizarSaldoGeral("Total Consolidado: " + String.format("%.2f", saldoTotalGeralEuros) + " EUR");
+        view.atualizarSaldoTotal(String.format("%.2f €", totalEur));
     }
     // O MOTOR CRIPTOGRÁFICO: Gera um Hash SHA-256 único para a transação
     public static String calcularSHA256(String texto) {

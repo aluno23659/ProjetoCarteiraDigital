@@ -1,2 +1,9 @@
-ze;diogo;Euro(EUR);20.0;1780564388116
-ze;Teste1;Ether(ETH);12.0;1780566358868
+Samuel;Andre;Euro(EUR);10.0;1780570006343
+Andre;Andre;BitCoin(BTC);-10.0;1780570096631
+Andre;Andre;Ether(ETH);277.4;1780570096631
+Andre;Andre;Euro(EUR);-10.0;1780570110101
+Andre;Andre;BitCoin(BTC);1.5999999999999999E-4;1780570110101
+Entidade_Bancaria;Samuel;Euro(EUR);200.0;1780589349990
+Entidade_Bancaria;Andre;Euro(EUR);55.0;1780589366273
+Entidade_Bancaria;Samuel;BitCoin(BTC);0.1;1780589455172
+Entidade_Bancaria;Andre;BitCoin(BTC);1.0;1780589508892

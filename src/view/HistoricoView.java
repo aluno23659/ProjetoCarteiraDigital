@@ -9,6 +9,7 @@ public class HistoricoView extends JDialog {
 
     private JTable tabela;
     private DefaultTableModel modeloTabela;
+    private javax.swing.JButton btnExportar;
 
     public HistoricoView(JFrame parent) {
         super(parent, "Histórico de Transações Protegido (Blockchain)", true);
@@ -32,6 +33,10 @@ public class HistoricoView extends JDialog {
         painelPrincipal.add(scrollPane, BorderLayout.CENTER);
 
         add(painelPrincipal);
+
+        btnExportar = new javax.swing.JButton("Exportar Extrato (TXT)");
+// Substitui 'nomeDoPainel' pelo nome do painel de botões que eles usaram no fundo da janela
+        painelPrincipal.add(btnExportar);
     }
 
     // Método atualizado para receber o Hash
@@ -40,4 +45,8 @@ public class HistoricoView extends JDialog {
         String hashCurto = hash.substring(0, Math.min(hash.length(), 15)) + "...";
         modeloTabela.addRow(new Object[]{origem, destino, moeda, valor, hashCurto});
     }
+    
+    public javax.swing.JButton getBtnExportar() {
+    return btnExportar;
+}
 }

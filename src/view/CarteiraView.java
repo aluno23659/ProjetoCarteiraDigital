@@ -15,6 +15,8 @@ public class CarteiraView extends JFrame {
     private JButton btnNovaCarteira;
     private JButton btnExchange;
     private JButton btnDeposito;
+    private JButton btnLevantamento;
+    
 
     private JTable tabelaCarteiras;
     private DefaultTableModel modeloTabela;
@@ -63,12 +65,14 @@ public class CarteiraView extends JFrame {
         btnExchange = new JButton("Swap (Trocar)");
         btnNovaTransacao = new JButton("Transferir");
         btnDeposito = new JButton("Depositar");
+        btnLevantamento = new JButton("Levantamento");
 
         painelBotoes.add(btnVerHistorico);
         painelBotoes.add(btnNovaCarteira);
         painelBotoes.add(btnExchange);
         painelBotoes.add(btnNovaTransacao);
         painelBotoes.add(btnDeposito);
+        painelBotoes.add(btnLevantamento);
         contentPane.add(painelBotoes, BorderLayout.SOUTH);
     }
 
@@ -92,5 +96,5 @@ public class CarteiraView extends JFrame {
     public JButton getBtnNovaCarteira() { return btnNovaCarteira; }
     public JButton getBtnExchange() { return btnExchange; }
     public JButton getBtnDeposito() { return btnDeposito; }
-
+    public JButton getBtnLevantamento() { return btnLevantamento; }
 }

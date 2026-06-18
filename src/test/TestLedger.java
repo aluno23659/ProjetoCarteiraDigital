@@ -36,6 +36,7 @@ public class TestLedger {
      * Ponto de entrada principal da aplicação de teste para o Ledger.
      * <p>
      * O fluxo de execução realiza as seguintes operações ordenadas:
+     * </p>
      * <ol>
      * <li>Inicializa um livro de registos volátil em memória RAM.</li>
      * <li>Instancia uma carteira central de sistema e três carteiras de utilizadores regulares.</li>
@@ -43,7 +44,6 @@ public class TestLedger {
      * <li>Filtra e isola o histórico de transações de um utilizador específico ("maria").</li>
      * <li>Imprime o resultado formatado na consola.</li>
      * </ol>
-     * </p>
      *
      * @param args Argumentos da linha de comandos passados na execução (não utilizados).
      */

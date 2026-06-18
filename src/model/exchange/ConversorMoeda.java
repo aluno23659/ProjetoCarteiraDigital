@@ -60,11 +60,11 @@ public class ConversorMoeda {
      * Realiza a conversão direta de valores entre duas moedas genéricas (ex: BTC para USD).
      * <p>
      * O algoritmo divide-se em duas etapas consecutivas:
+     * </p>
      * <ol>
      * <li>Normaliza o montante de origem transformando-o em Euros através do método {@link #paraEuro(Currency, double)}.</li>
      * <li>Divide o subtotal obtido em Euros pela taxa de mercado da moeda de destino.</li>
      * </ol>
-     * </p>
      *
      * @param moedaOrigem  A moeda base atual do saldo (remetente).
      * @param moedaDestino A moeda para a qual o valor será transposto (destinatário).

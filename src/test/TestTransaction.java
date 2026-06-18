@@ -34,13 +34,13 @@ public class TestTransaction {
      * Ponto de entrada principal da aplicação de teste para Transações.
      * <p>
      * O fluxo deste método executa as seguintes etapas:
+     * </p>
      * <ol>
      * <li>Instancia uma carteira fidedigna de origem ({@link SystemWallet}).</li>
      * <li>Instancia uma carteira nominal de destino ({@link RegularWallet} para a utilizadora "Ana").</li>
      * <li>Define o ativo transacionável como sendo a criptomoeda {@link BitCoin}.</li>
      * <li>Agrupa estas entidades num único registo de {@link Transaction} com o valor de 100 unidades.</li>
      * </ol>
-     * </p>
      *
      * @param args Argumentos da linha de comandos passados na execução (não utilizados).
      */

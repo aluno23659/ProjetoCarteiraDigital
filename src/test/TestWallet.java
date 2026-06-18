@@ -5,7 +5,7 @@ import model.wallet.SystemWallet;
 import model.wallet.Wallet;
 
 /**
- * Classe de teste responsável por verificar o comportamento, a representação textual 
+ * Classe de teste responsável por verificar o comportamento, a representation textual 
  * e os critérios de igualdade das subclasses de {@link Wallet}.
  * <p>
  * Este ambiente de execução isolado (ponto de entrada {@code main}) serve para validar 
@@ -32,6 +32,7 @@ public class TestWallet {
      * Ponto de entrada principal da aplicação de teste para Carteiras.
      * <p>
      * O fluxo deste método executa as seguintes validações:
+     * </p>
      * <ol>
      * <li>Instancia uma carteira regular para a utilizadora "ana" ({@code w1}).</li>
      * <li>Instancia a carteira central automatizada do sistema ({@code s2}).</li>
@@ -39,7 +40,6 @@ public class TestWallet {
      * <li>Imprime a representação textual das carteiras para auditar o sufixo de validação {@code (true/false)}.</li>
      * <li>Testa o método {@link Wallet#equals(Object)} para garantir que {@code w1} e {@code w2} são consideradas iguais por possuírem o mesmo endereço.</li>
      * </ol>
-     * </p>
      *
      * @param args Argumentos da linha de comandos passados na execução (não utilizados).
      */

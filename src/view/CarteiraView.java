@@ -55,12 +55,12 @@ public class CarteiraView extends JFrame {
      * <p>
      * Configura as propriedades básicas da janela (título, dimensões e posicionamento) 
      * e organiza os componentes visuais em três zonas de layout principais:
+     * </p>
      * <ul>
      * <li><b>NORTH (Topo):</b> Seleção da conta ativa e o saldo total formatado.</li>
      * <li><b>CENTER (Centro):</b> Tabela em scroll listando os ativos e saldos parciais.</li>
      * <li><b>SOUTH (Baixo):</b> Painel de fluxo com os botões operacionais da aplicação.</li>
      * </ul>
-     * </p>
      */
     public CarteiraView() {
         setTitle("Crypto Wallet Pro v2.0");

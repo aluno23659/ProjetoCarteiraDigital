@@ -14,12 +14,34 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+/**
+ * Controlador principal da interface da Carteira (Camada Controller do padrão MVC).
+ * <p>
+ * Esta classe gere o ciclo de vida dos eventos gerados pela interface gráfica (View),
+ * valida as regras de negócio de depósitos, levantamentos, transferências e câmbios,
+ * e atualiza o histórico persistido no Ledger (Model).
+ * </p>
+ *
+ * @author Seu Nome ou Organização
+ * @version 2.0
+ */
 public class CarteiraController {
 
+    /** Janela principal da interface gráfica da carteira. */
     private final CarteiraView view;
+    
+    /** Gestor de persistência e histórico de transações em ficheiro CSV. */
     private final CsvLedger ledger;
-    private final java.util.List<String> carteirasRegistadas; // Nova lista!
+    
+    /** Lista em memória contendo os nomes de todas as carteiras registadas e ativas. */
+    private final java.util.List<String> carteirasRegistadas;
 
+    /**
+     * Construtor do Controlador. Inicializa os dados, mapeia eventos e atualiza o ecrã.
+     *
+     * @param view   A janela principal da aplicação (Interface Gráfica).
+     * @param ledger O livro de registos das transações (Persistência).
+     */
     public CarteiraController(CarteiraView view, model.data.CsvLedger ledger) {
         this.view = view;
         this.ledger = ledger;
@@ -27,12 +49,17 @@ public class CarteiraController {
 
         carregarCarteirasDoHistorico();
 
-        // ADICIONAR ESTA LINHA: Injeta os nomes das carteiras no menu pendente
+        // Injeta os nomes das carteiras no menu pendente
         view.atualizarListaCarteiras(this.carteirasRegistadas);
 
         inicializarEventos();
         calcularEAtualizarSaldo();
     }
+
+    /**
+     * Percorre o histórico de transações no Ledger para descobrir e extrair
+     * os nomes de todas as carteiras que já realizaram transações, preenchendo a lista em memória.
+     */
     private void carregarCarteirasDoHistorico() {
         for (model.transactions.Transaction t : ledger.getElements()) {
             String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
@@ -43,15 +70,20 @@ public class CarteiraController {
         }
     }
 
+    /**
+     * Vincula os ActionListeners aos botões e componentes da interface gráfica.
+     * Define o comportamento ao interagir com depósitos, levantamentos, swaps, novas transações e histórico.
+     */
     private void inicializarEventos() {
-        // Quando o botão "Ver Histórico" for clicado
-        // 1. Quando o utilizador muda a carteira no menu pendente, a tabela atualiza!
+        
+        // 1. Atualizar a tabela ao mudar a carteira ativa no Dropdown
         view.getCbCarteiraAtiva().addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 calcularEAtualizarSaldo();
             }
         });
- // Lógica do Botão DEPOSITAR
+
+        // 2. Lógica do Botão DEPOSITAR
         view.getBtnDeposito().addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -61,7 +93,6 @@ public class CarteiraController {
                     return;
                 }
 
-                // Mini-formulário rápido dentro de um JOptionPane
                 JPanel painelDeposito = new JPanel(new GridLayout(2, 2, 5, 5));
                 painelDeposito.add(new JLabel("Moeda:"));
                 JComboBox<String> cbMoeda = new JComboBox<>(new String[]{"Euro (EUR)", "Bitcoin (BTC)", "Ethereum (ETH)"});
@@ -71,7 +102,6 @@ public class CarteiraController {
                 JTextField txtValor = new JTextField();
                 painelDeposito.add(txtValor);
 
-                // Mostra a janela de depósito
                 int resultado = JOptionPane.showConfirmDialog(view, painelDeposito,
                         "Depósito Externo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
@@ -86,10 +116,8 @@ public class CarteiraController {
                         model.wallet.Wallet origem = new model.wallet.RegularWallet("Entidade_Bancaria");
                         model.wallet.Wallet destino = new model.wallet.RegularWallet(ativa);
 
-                        // Regista o depósito no Ledger
                         ledger.add(new model.transactions.Transaction(origem, destino, moedaObj, valor));
 
-                        // Atualiza a interface
                         calcularEAtualizarSaldo();
                         JOptionPane.showMessageDialog(view, "Depósito de " + valor + " registado com sucesso!");
 
@@ -98,9 +126,9 @@ public class CarteiraController {
                     }
                 }
             }
-        }); // <-- O DEPOSITAR TERMINA AQUI
+        });
 
-// Lógica do Botão LEVANTAR (WITHDRAW)
+        // 3. Lógica do Botão LEVANTAR (WITHDRAW)
         view.getBtnLevantamento().addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -130,11 +158,10 @@ public class CarteiraController {
                         String moedaEscolhida = (String) cbMoeda.getSelectedItem();
                         model.coin.Currency moedaObj = model.coin.CoinFactory.criarMoeda(moedaEscolhida);
 
-                        // --- VALIDAÇÃO CRÍTICA DE SALDO ---
+                        // VALIDAÇÃO CRÍTICA DE SALDO
                         double saldoDisponivel = obterSaldoDaMoeda(ativa, moedaObj.toString());
 
                         if (valor > saldoDisponivel) {
-                            // Lança a exceção personalizada usando o caminho do pacote
                             throw new exceptions.SaldoInsuficienteException(
                                 "Saldo insuficiente! Tens apenas " + saldoDisponivel + " " + moedaObj.toString() + " nesta carteira."
                             );
@@ -143,13 +170,13 @@ public class CarteiraController {
                         model.wallet.Wallet origem = new model.wallet.RegularWallet(ativa);
                         model.wallet.Wallet destino = new model.wallet.RegularWallet("Levantamento_Externo");
 
+                        // Regista o levantamento com valor negativo
                         ledger.add(new model.transactions.Transaction(origem, destino, moedaObj, -valor));
 
                         calcularEAtualizarSaldo();
                         JOptionPane.showMessageDialog(view, "Levantamento de " + valor + " registado com sucesso!");
 
                     } catch (exceptions.SaldoInsuficienteException ex) {
-                        // Captura especificamente o teu erro de saldo
                         JOptionPane.showMessageDialog(view, ex.getMessage(), "Erro de Saldo", JOptionPane.ERROR_MESSAGE);
                     } catch (NumberFormatException ex) {
                         JOptionPane.showMessageDialog(view, "Valor inválido. Insere apenas números maiores que zero.", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -159,99 +186,8 @@ public class CarteiraController {
                 }
             }
         });
-        
-        // Lógica do Botão DEPOSITAR
-        view.getBtnDeposito().addActionListener(new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                // ... (toda a lógica do depósito que os teus colegas fizeram) ...
-            }
-        }); // <-- O DEPOSITAR TERMINA AQUI
 
-        // COLA O BOTÃO DE LEVANTAMENTO EXATAMENTE AQUI:
-        view.getBtnLevantamento().addActionListener(new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                String ativa = view.getCarteiraAtiva();
-                if (ativa == null) {
-                    JOptionPane.showMessageDialog(view, "Seleciona uma carteira primeiro!");
-                    return;
-                }
-
-                JPanel painelLevantamento = new JPanel(new GridLayout(2, 2, 5, 5));
-                painelLevantamento.add(new JLabel("Moeda:"));
-                JComboBox<String> cbMoeda = new JComboBox<>(new String[]{"Euro (EUR)", "Bitcoin (BTC)", "Ethereum (ETH)"});
-                painelLevantamento.add(cbMoeda);
-
-                painelLevantamento.add(new JLabel("Valor a levantar:"));
-                JTextField txtValor = new JTextField();
-                painelLevantamento.add(txtValor);
-
-                int resultado = JOptionPane.showConfirmDialog(view, painelLevantamento,
-                        "Levantamento Externo", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-
-                if (resultado == JOptionPane.OK_OPTION) {
-                    try {
-                        double valor = Double.parseDouble(txtValor.getText().replace(",", "."));
-                        if (valor <= 0) throw new NumberFormatException();
-
-                        String moedaEscolhida = (String) cbMoeda.getSelectedItem();
-                        model.coin.Currency moedaObj = model.coin.CoinFactory.criarMoeda(moedaEscolhida);
-
-                        // Validação de saldo usando o método auxiliar
-                        double saldoDisponivel = obterSaldoDaMoeda(ativa, moedaObj.toString());
-
-                        if (valor > saldoDisponivel) {
-                            JOptionPane.showMessageDialog(view, 
-                                    "Saldo insuficiente! Tens apenas " + saldoDisponivel + " " + moedaObj.toString() + " nesta carteira.", 
-                                    "Erro de Saldo", JOptionPane.ERROR_MESSAGE);
-                            return;
-                        }
-
-                        model.wallet.Wallet origem = new model.wallet.RegularWallet(ativa);
-                        model.wallet.Wallet destino = new model.wallet.RegularWallet("Levantamento_Externo");
-
-                        // Saída de dinheiro guardada como valor NEGATIVO no histórico
-                        ledger.add(new model.transactions.Transaction(origem, destino, moedaObj, -valor));
-
-                        calcularEAtualizarSaldo();
-                        JOptionPane.showMessageDialog(view, "Levantamento de " + valor + " registado com sucesso!");
-
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(view, "Valor inválido. Insere apenas números maiores que zero.", "Erro", JOptionPane.ERROR_MESSAGE);
-                    } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(view, "Ocorreu um erro ao processar o levantamento.", "Erro", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-            
-            // Método auxiliar para verificar quanto o utilizador tem de uma moeda específica
-    private double obterSaldoDaMoeda(String carteira, String nomeMoeda) {
-        double saldo = 0.0;
-        for (model.transactions.Transaction t : ledger.getElements()) {
-            String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
-            String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
-            String moeda = t.getCoin().toString();
-            double valor = t.getAmount();
-
-            if (moeda.equals(nomeMoeda)) {
-                if (origem.equals(carteira)) {
-                    saldo -= valor; 
-                }
-                if (destino.equals(carteira)) {
-                    saldo += valor; 
-                }
-            }
-        }
-        return saldo;
-    }
-        }); // <-- FIM DO BOTÃO DE LEVANTAMENTO
-        
-        
-        
-
-
-        // 2. O botão "Swap (Trocar)"
+        // 4. Lógica do Botão SWAP (Trocar moedas)
         view.getBtnExchange().addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e) {
                 String ativa = view.getCarteiraAtiva();
@@ -273,7 +209,7 @@ public class CarteiraController {
                             // Regista a SAÍDA (venda)
                             ledger.add(new model.transactions.Transaction(w, w, moedaDe, -qtdVenda));
 
-                            // Taxas de Câmbio Fixas (apenas para simulação do projeto)
+                            // Taxas de Câmbio Fixas para Simulação
                             double taxa = 1.0;
                             String nomeDe = moedaDe.toString();
                             String nomePara = moedaPara.toString();
@@ -300,61 +236,50 @@ public class CarteiraController {
                 janelaSwap.setVisible(true);
             }
         });
-        // Lógica do Botão Criar Carteira (ATUALIZADA PARA A V2.0)
+
+        // 5. Lógica do Botão CRIAR CARTEIRA
         view.getBtnNovaCarteira().addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
-                // Abre uma caixinha simples a pedir o nome
                 String nomeNovaCarteira = JOptionPane.showInputDialog(view, "Qual o nome da nova carteira?");
 
-                // Valida se o utilizador escreveu algo e se não cancelou
                 if (nomeNovaCarteira != null && !nomeNovaCarteira.trim().isEmpty()) {
                     String nomeLimpo = nomeNovaCarteira.trim();
 
                     if (carteirasRegistadas.contains(nomeLimpo)) {
                         JOptionPane.showMessageDialog(view, "Esta carteira já existe!", "Erro", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        // 1. Adiciona a nova carteira à memória do Controller
                         carteirasRegistadas.add(nomeLimpo);
-
-                        // 2. Atualiza o menu pendente (Dropdown) lá no topo da janela!
                         view.atualizarListaCarteiras(carteirasRegistadas);
-
-                        // 3. (Toque de classe UX) Seleciona automaticamente a carteira que acabaste de criar
                         view.getCbCarteiraAtiva().setSelectedItem(nomeLimpo);
-
                         JOptionPane.showMessageDialog(view, "Carteira '" + nomeLimpo + "' criada com sucesso!");
                     }
                 }
             }
         });
+
+        // 6. Lógica do Botão VER HISTÓRICO
         view.getBtnVerHistorico().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 view.HistoricoView janelaHistorico = new view.HistoricoView(view);
 
                 for (Transaction t : ledger.getElements()) {
-
-                    // 1. Limpeza do "(true)" e "(false)" injetados pelo modelo
-                    String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
+                    String origen = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
                     String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
-
-                    // (Opcional) Podemos também limpar o nome da moeda para ficar mais elegante na tabela!
                     String moeda = t.getCoin().toString().replace("BitCoin(BTC)", "BTC").replace("Euro(EUR)", "EUR");
-
                     String valor = String.valueOf(t.getAmount());
 
-                    // 2. Criptografia em Ação
-                    String dadosBrutos = origem + destino + moeda + valor;
+                    // Criptografia em Ação para Auditoria
+                    String dadosBrutos = origen + destino + moeda + valor;
                     String hashSeguranca = calcularSHA256(dadosBrutos);
 
-                    // 3. Enviar para a grelha
-                    janelaHistorico.adicionarLinha(origem, destino, moeda, valor, hashSeguranca);
+                    janelaHistorico.adicionarLinha(origen, destino, moeda, valor, hashSeguranca);
                 }
 
                 janelaHistorico.setVisible(true);
                 
-                // Lógica para quando clicarem no botão de exportar da janela de histórico
+                // Evento de Exportação contido dentro da janela de histórico
                 janelaHistorico.getBtnExportar().addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ev) {
@@ -365,24 +290,19 @@ public class CarteiraController {
             }
         });
 
-        // Quando o botão "Nova Transação" da janela principal for clicado
+        // 7. Lógica do Botão NOVA TRANSAÇÃO (Transferência entre contas)
         view.getBtnNovaTransacao().addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // 1. Abre a nova janela de formulário
-                // Passamos a lista de carteiras para a janela desenhar os menus pendentes
                 view.NovaTransacaoView janelaNova = new view.NovaTransacaoView(view, carteirasRegistadas);
 
                 janelaNova.getBtnGravar().addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent ev) {
-
-                        // Lemos a partir dos menus pendentes!
                         String origem = janelaNova.getOrigemSelecionada();
                         String destino = janelaNova.getDestinoSelecionado();
                         String valorTexto = janelaNova.getValor().trim();
 
-                        // Validação Extra: Não deixar enviar para a própria carteira
                         if (origem == null || destino == null) {
                             JOptionPane.showMessageDialog(janelaNova, "Cria pelo menos duas carteiras primeiro!");
                             return;
@@ -393,29 +313,21 @@ public class CarteiraController {
                         }
 
                         try {
-                            // VALIDAÇÃO 2: É um número a sério?
                             double valor = Double.parseDouble(valorTexto);
 
-                            // VALIDAÇÃO 3: Faz sentido? (Não transferir zero nem valores negativos)
                             if (valor <= 0) {
                                 JOptionPane.showMessageDialog(janelaNova,
                                         "Erro: O valor da transação tem de ser maior que zero.",
-                                        "Valor Inválido",
-                                        JOptionPane.ERROR_MESSAGE);
+                                        "Valor Inválido", JOptionPane.ERROR_MESSAGE);
                                 return;
                             }
-
-                            // --- SE PASSOU AS VALIDAÇÕES TODAS, GRAVA! ---
 
                             model.wallet.RegularWallet cartOrigem = new model.wallet.RegularWallet(origem);
                             model.wallet.RegularWallet cartDestino = new model.wallet.RegularWallet(destino);
 
-                            // 1. Descobrir qual foi a moeda que o utilizador escolheu no Dropdown
                             String moedaEscolhida = janelaNova.getMoedaSelecionada();
                             model.coin.Currency moedaObj;
 
-                            // 2. Criar a moeda certa consoante a escolha
-                            // ATENÇÃO: Verifica se tens estas classes (Ethereum, Euro) criadas no teu pacote model.coin!
                             if (moedaEscolhida.contains("BTC")) {
                                 moedaObj = new model.coin.BitCoin();
                             } else if (moedaEscolhida.contains("ETH")) {
@@ -424,36 +336,33 @@ public class CarteiraController {
                                 moedaObj = new model.coin.Euro();
                             }
 
-                            // 3. Criar a transação com a moeda dinâmica
                             Transaction t = new Transaction(cartOrigem, cartDestino, moedaObj, valor);
-
                             ledger.add(t);
 
                             calcularEAtualizarSaldo();
                             janelaNova.dispose();
-
                             JOptionPane.showMessageDialog(view, "Transação gravada com sucesso!");
 
                         } catch (NumberFormatException ex) {
-                            // Se o Double.parseDouble falhar porque o utilizador escreveu "letras" em vez de números
                             JOptionPane.showMessageDialog(janelaNova,
                                     "Erro: Escreve um número válido no valor (ex: 2.5)",
-                                    "Formato de Número Inválido",
-                                    JOptionPane.ERROR_MESSAGE);
+                                    "Formato de Número Inválido", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 });
-
-                // Mostra a janela no ecrã
                 janelaNova.setVisible(true);
             }
         });
     }
 
-    // O CÉREBRO EM AÇÃO: LER DO MODELO, CALCULAR E ENVIAR PARA A VIEW
+    /**
+     * O Cérebro do Fluxo: Lê todas as transações do Ledger, filtra as movimentações
+     * da carteira atualmente ativa, agrupa os saldos por tipo de moeda e atualiza a View,
+     * incluindo a conversão do balanço total consolidado para Euros (€).
+     */
     private void calcularEAtualizarSaldo() {
         String ativa = view.getCarteiraAtiva();
-        if (ativa == null) return; // Se não houver carteira selecionada, não faz nada
+        if (ativa == null) return;
 
         java.util.Map<String, Double> ativosDaConta = new java.util.HashMap<>();
         double totalEur = 0.0;
@@ -476,7 +385,6 @@ public class CarteiraController {
         for (String moeda : ativosDaConta.keySet()) {
             double qtd = ativosDaConta.get(moeda);
 
-            // Assume-se que tens um ConversorMoeda. Se der erro, avisa!
             model.coin.Currency c = model.coin.CoinFactory.criarMoeda(moeda);
             double valorEur = model.exchange.ConversorMoeda.paraEuro(c, qtd);
             totalEur += valorEur;
@@ -486,7 +394,14 @@ public class CarteiraController {
 
         view.atualizarSaldoTotal(String.format("%.2f €", totalEur));
     }
-    // O MOTOR CRIPTOGRÁFICO: Gera um Hash SHA-256 único para a transação
+
+    /**
+     * O Motor Criptográfico: Gera um código Hash SHA-256 (Hexadecimal) único 
+     * a partir de uma String de dados para simular integridade de auditoria.
+     *
+     * @param texto Cadeia de caracteres brutos (dados da transação reunidos).
+     * @return      A assinatura digital (Hash com 64 caracteres hexadecimais) ou string de erro.
+     */
     public static String calcularSHA256(String texto) {
         try {
             java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
@@ -498,13 +413,20 @@ public class CarteiraController {
                 if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
-            // Retorna o código hexadecimal completo
             return hexString.toString();
         } catch (Exception ex) {
             return "Erro ao gerar Hash";
         }
     }
-    
+
+    /**
+     * Método auxiliar privado para verificar em tempo real o balanço disponível 
+     * de uma moeda específica numa determinada carteira, somando e subtraindo transações.
+     *
+     * @param carteira   O nome da carteira que se pretende auditar.
+     * @param nomeMoeda  O nome/código identificador da moeda (ex: "EUR", "BTC").
+     * @return           O saldo líquido atual apurado (double).
+     */
     private double obterSaldoDaMoeda(String carteira, String nomeMoeda) {
         double saldo = 0.0;
         for (model.transactions.Transaction t : ledger.getElements()) {
@@ -524,17 +446,20 @@ public class CarteiraController {
         }
         return saldo;
     }
-    
-    // Método para exportar o extrato bancário em formato TXT
+
+    /**
+     * Exporta o extrato bancário detalhado de uma carteira ativa para um ficheiro físico de texto (.txt).
+     * Inclui a listagem das operações com os respetivos Hashes SHA-256 calculados na hora.
+     *
+     * @param carteiraAtiva O nome da carteira da qual se deseja exportar o extrato.
+     */
     public void exportarExtratoParaFicheiro(String carteiraAtiva) {
         if (carteiraAtiva == null) return;
 
         String nomeFicheiro = "extrato_" + carteiraAtiva + ".txt";
         
-        // Usamos o BufferedWriter para criar e escrever no ficheiro de texto
         try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(nomeFicheiro))) {
             
-            // Cabeçalho do Extrato
             writer.write("==================================================\n");
             writer.write("           EXTRATO BANCÁRIO DIGITAL               \n");
             writer.write("==================================================\n");
@@ -544,18 +469,15 @@ public class CarteiraController {
             writer.write(String.format("%-15s | %-15s | %-10s | %-12s\n", "ORIGEM", "DESTINO", "MOEDA", "VALOR"));
             writer.write("--------------------------------------------------\n");
 
-            // Percorre o histórico do Ledger
             for (model.transactions.Transaction t : ledger.getElements()) {
                 String origem = t.getSource().toString().replace("(true)", "").replace("(false)", "").trim();
                 String destino = t.getDestination().toString().replace("(true)", "").replace("(false)", "").trim();
                 String moeda = t.getCoin().toString().replace("BitCoin(BTC)", "BTC").replace("Euro(EUR)", "EUR");
                 String valor = String.valueOf(t.getAmount());
 
-                // Se a nossa carteira participou nesta transação, adicionamos ao extrato
                 if (origem.equals(carteiraAtiva) || destino.equals(carteiraAtiva)) {
                     writer.write(String.format("%-15s | %-15s | %-10s | %-12s\n", origem, destino, moeda, valor));
                     
-                    // Adiciona o Hash de segurança logo abaixo da transação para auditoria
                     String dadosBrutos = origem + destino + moeda + valor;
                     String hash = calcularSHA256(dadosBrutos);
                     writer.write("   [HASH SEGURANÇA]: " + hash + "\n");

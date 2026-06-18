@@ -1,8 +1,31 @@
 package model.coin;
 
+/**
+ * Fábrica responsável pela instanciação dinâmica de moedas (Padrão de Desenho Factory).
+ * <p>
+ * Esta classe centraliza a lógica de criação dos objetos que herdam de {@link Currency}.
+ * Sendo uma fábrica estática, elimina a necessidade de instanciar a classe {@code CoinFactory} 
+ * para obter uma nova moeda.
+ * </p>
+ *
+ * @author Seu Nome ou Organização
+ * @version 1.0
+ */
 public class CoinFactory {
 
-    // Método estático: não precisas de instanciar a fábrica para a usar
+    /**
+     * Instancia e devolve o objeto de moeda correspondente com base numa string de identificação.
+     * <p>
+     * O método aplica uma limpeza de segurança na string recebida (removendo marcadores de estado, 
+     * espaços em branco e convertendo o texto para maiúsculas) para garantir que variações na escrita 
+     * não quebrem a lógica de correspondência.
+     * </p>
+     *
+     * @param nomeMoeda O nome ou sigla da moeda enviada pela interface gráfica ou modelo (ex: "Euro (EUR)", "BTC").
+     * @return          Uma instância de {@link Ether} se contiver ETH/ETHEREUM, 
+     * uma instância de {@link Euro} se contiver EUR/EURO, 
+     * ou uma instância de {@link BitCoin} como moeda padrão (defeito).
+     */
     public static Currency criarMoeda(String nomeMoeda) {
 
         // Limpeza de segurança (tira espaços vazios e mete tudo em maiúsculas para evitar erros)

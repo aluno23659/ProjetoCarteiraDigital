@@ -9,7 +9,7 @@ package model.coin;
  * saldos totais na interface gráfica.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see model.coin.Currency
  */

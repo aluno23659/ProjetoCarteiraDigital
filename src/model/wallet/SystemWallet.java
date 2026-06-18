@@ -9,7 +9,7 @@ package model.wallet;
  * as suas transações dispensam qualquer processo de validação externa.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see model.wallet.Wallet
  */

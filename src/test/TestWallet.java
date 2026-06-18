@@ -14,7 +14,7 @@ import model.wallet.Wallet;
  * de carteiras que partilham o mesmo endereço alfanumérico.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  */
 public class TestWallet {

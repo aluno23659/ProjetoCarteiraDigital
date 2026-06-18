@@ -8,7 +8,7 @@ package model.coin;
  * que serão utilizados nas operações de balanço, histórico e câmbio.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see model.coin.Currency
  */

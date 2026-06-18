@@ -7,3 +7,11 @@ Entidade_Bancaria;Samuel;Euro(EUR);200.0;1780589349990
 Entidade_Bancaria;Andre;Euro(EUR);55.0;1780589366273
 Entidade_Bancaria;Samuel;BitCoin(BTC);0.1;1780589455172
 Entidade_Bancaria;Andre;BitCoin(BTC);1.0;1780589508892
+Entidade_Bancaria;Samuel;Euro(EUR);10.0;1780927070148
+Entidade_Bancaria;Sady;BitCoin(BTC);1.0;1781790549055
+Sady;Samuel;BitCoin(BTC);1.0;1781790563771
+Andre;Levantamento_Externo;Euro(EUR);-15.0;1781790623585
+Entidade_Bancaria;Andre;Euro(EUR);10.0;1781790638034
+Andre;Levantamento_Externo;Euro(EUR);-10.0;1781790642499
+Andre;Levantamento_Externo;Euro(EUR);-20.0;1781790655905
+Samuel;Levantamento_Externo;Euro(EUR);100.0;1781793420074

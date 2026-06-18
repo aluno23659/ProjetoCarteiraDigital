@@ -16,7 +16,7 @@ import java.io.IOException;
  * para reconstruir os objetos de moeda corretos a partir das strings lidas do ficheiro.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 2.0
  * @see model.data.Ledger
  */

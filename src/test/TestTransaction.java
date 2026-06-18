@@ -16,7 +16,7 @@ import model.wallet.Wallet;
  * e o montante numérico ocorre sem falhas estruturais ou exceções de ponteiro nulo (NullPointerException).
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  */
 public class TestTransaction {

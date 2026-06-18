@@ -11,7 +11,7 @@ import java.util.HashMap;
  * valorização técnica ao projeto de gestão da carteira.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  */
 public class ConversorMoeda {

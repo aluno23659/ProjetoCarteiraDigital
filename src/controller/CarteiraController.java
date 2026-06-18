@@ -4,7 +4,6 @@ import model.data.CsvLedger;
 import view.CarteiraView;
 import model.transactions.Transaction;
 import model.exchange.ConversorMoeda;
-
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +21,7 @@ import javax.swing.JTextField;
  * e atualiza o histórico persistido no Ledger (Model).
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 2.0
  */
 public class CarteiraController {
@@ -170,8 +169,8 @@ public class CarteiraController {
                         model.wallet.Wallet origem = new model.wallet.RegularWallet(ativa);
                         model.wallet.Wallet destino = new model.wallet.RegularWallet("Levantamento_Externo");
 
-                        // Regista o levantamento com valor negativo
-                        ledger.add(new model.transactions.Transaction(origem, destino, moedaObj, -valor));
+                        // Regista o levantamento com valor positivo. A lógica de cálculo de saldo trata da subtração.
+                        ledger.add(new model.transactions.Transaction(origem, destino, moedaObj, valor));
 
                         calcularEAtualizarSaldo();
                         JOptionPane.showMessageDialog(view, "Levantamento de " + valor + " registado com sucesso!");

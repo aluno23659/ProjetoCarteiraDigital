@@ -8,7 +8,7 @@ package model.coin;
  * um nome legível e um símbolo identificador (ticker de mercado).
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  */
 public abstract class Currency {

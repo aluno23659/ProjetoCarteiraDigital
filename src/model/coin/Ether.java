@@ -8,7 +8,7 @@ package model.coin;
  * que serão processados nas rotinas de cálculo de saldo, histórico e conversões.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see model.coin.Currency
  */

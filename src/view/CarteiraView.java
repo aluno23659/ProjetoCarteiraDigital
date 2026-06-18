@@ -14,7 +14,7 @@ import java.util.List;
  * ativos e botões de gatilho para operações como depósitos, levantamentos, trocas (swaps) e transferências.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 2.0
  * @see javax.swing.JFrame
  */

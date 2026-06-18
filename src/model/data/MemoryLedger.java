@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * ambientes de testes unitários, simulações ou como uma cache temporária de alta performance.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see model.data.Ledger
  */

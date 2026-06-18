@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * que todos os gestores de dados possuam métodos para registar e filtrar transações.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  */
 public abstract class Ledger {

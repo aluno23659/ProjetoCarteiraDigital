@@ -12,7 +12,7 @@ import java.awt.*;
  * destino a ser adquirida e introduzir o montante numérico para processamento da troca.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see javax.swing.JDialog
  */

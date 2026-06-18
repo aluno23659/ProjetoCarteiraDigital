@@ -18,7 +18,7 @@ import model.wallet.Wallet;
  * múltiplas transações e testa o algoritmo de filtragem por utilizador específico.
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  */
 public class TestLedger {

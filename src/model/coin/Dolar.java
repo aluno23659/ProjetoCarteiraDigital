@@ -9,7 +9,7 @@ package model.coin;
  * Dólar Canadiano CAD, entre outros).
  * </p>
  *
- * @author Seu Nome ou Organização
+ * @author Sidnei e Jose
  * @version 1.0
  * @see model.coin.Currency
  */

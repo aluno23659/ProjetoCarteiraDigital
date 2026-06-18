@@ -12,7 +12,7 @@ import com.formdev.flatlaf.FlatDarkLaf;
  * carregar o repositório de dados, instanciar a interface gráfica e conectar
  * os componentes através do padrão MVC (Model-View-Controller).
  * </p>
- * * @author Seu Nome ou Organização
+ * * @author Sidnei e Jose
  * @version 1.0
  */
 public class Main {

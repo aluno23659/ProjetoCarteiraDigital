@@ -7,7 +7,7 @@ package exceptions;
  * um levantamento ou uma transferência cujo valor ultrapassa o saldo líquido disponível 
  * na carteira ativa para a moeda selecionada.
  * </p>
- * * @author Seu Nome ou Organização
+ * * @author Sidnei e Jose
  * @version 1.0
  */
 public class SaldoInsuficienteException extends Exception {
